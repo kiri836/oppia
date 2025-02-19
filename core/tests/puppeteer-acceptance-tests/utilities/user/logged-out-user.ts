@@ -351,6 +351,7 @@ const viewsContainerSelector = '.e2e-test-info-card-views';
 const lastUpdatedInfoSelector = '.e2e-test-info-card-last-updated';
 const tagsContainerSelector = '.exploration-tags span';
 const ratingContainerSelector = '.e2e-test-info-card-rating span:nth-child(2)';
+const blogTagsSelectorComponent = '.e2e-test-tag-filter-component';
 
 const LABEL_FOR_SUBMIT_BUTTON = 'Submit and start contributing';
 const desktopNavbarButtonsSelector = '.oppia-navbar-tab-content';
@@ -419,6 +420,13 @@ export class LoggedOutUser extends BaseUser {
    */
   async navigateToAboutPage(): Promise<void> {
     await this.goto(aboutUrl);
+  }
+
+  /**
+   * Function to navigate to the blog page.
+   */
+  async navigateToBlogPage(): Promise<void> {
+    await this.goto(blogUrl);
   }
 
   /**
@@ -1613,6 +1621,49 @@ export class LoggedOutUser extends BaseUser {
       'The lesson creators carousel in teach page is working correctly.'
     );
   }
+
+  /**
+   * Function to search for blogs by keyword
+   */
+  async searchBlogPostsByKeyword(blogKeyword: string): Promise<void> {
+    await this.clickOn(searchInputSelector);
+    await this.type(searchInputSelector, blogKeyword);
+    await this.page.keyboard.press('Enter');
+    await this.page.waitForNavigation({waitUntil: ['load', 'networkidle0']});
+  }
+
+  /**
+   * Function to confirm blog searching results are correct
+   */
+  async expectBlogPostsHaveText(blogKeyword: string): Promise<void> {
+    const blogTitles = await this.page.$$eval(
+      '.e2e-test-blog-post-tile-title', nodes =>
+        nodes.map(n => n.innerText)).toContain(blogKeyword,
+    );
+    if (!blogTitles){
+       throw new error('No blogs with the that keyword found');
+    }
+
+  /**
+   * Function to search for posts by tag
+   */
+  async searchBlogPostsByTag(blogTag: string): Promise<void> {
+    await this.clickOn(blogTagsSelectorComponent);
+    await this.type(blogTagsSelectorComponent);
+    await this.page.waitForNavigation({waitUntil: ['load', 'networkidle0']});
+  }
+
+  /**
+   * Function to verify the blog search results by tag
+   */
+  async expectBlogPostsHaveTag(blogTag: string): Promise<void> {
+    const blogTags = await this.page.$$eval(
+      'blog-card-container', nodes =>
+        nodes.map(n => n.innerText)).toContain(blogTag,
+    );
+    if (!blogTags){
+       throw new error('No blogs with the those tags found');
+    } 
 
   /**
    * Function to verify the Lesson Creation Steps accordion functionality in the Teach page.
